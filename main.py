@@ -151,8 +151,18 @@ class WeatherApp(App):
             url_actual,
             on_success=self.got_current_weather,
             on_error=self.on_request_error,
-            on_failure=self.on_request_error
+            on_failure=self.on_request_error,
+            timeout=10  # 10 seconds timeout
         )
+
+        # Schedule a timeout check
+        Clock.schedule_once(lambda dt: self.check_request_timeout(req_actual), 10)
+
+    def check_request_timeout(self, req):
+        if req.is_finished:
+            return
+        self.show_error("Error: La solicitud ha tardado demasiado. Por favor, verifica tu conexión a internet.")
+        self.loading_indicator.opacity = 0
 
     def got_current_weather(self, req, data_actual):
         if data_actual.get('cod') != 200:
